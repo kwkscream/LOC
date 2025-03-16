@@ -12,14 +12,14 @@ const handleQuery = () => {
 		const [username, usertag] = user.split("#");
 
 		fetch(
-			`http://localhost:3000/getPUUID?gameName=${username}&tagLine=${usertag}`,
+			`/api/getPUUID?gameName=${username}&tagLine=${usertag}`,
 		)
 			.then((response) => response.json())
 			.then((result) => {
 				if (result.puuid) {
 					console.log("PUUID:", result.puuid);
 					return fetch(
-						`http://localhost:3000/playerStats?puuid=${result.puuid}`,
+						`/api/playerStats?puuid=${result.puuid}`,
 					);
 				} else {
 					throw new Error("PUUID не знайдено");
