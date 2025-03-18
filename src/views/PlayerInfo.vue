@@ -7,38 +7,47 @@ const route = useRoute();
 const user = route.query.user || "";
 const stats = ref(null);
 
-const handleQuery = () => {
-	if (user.includes("#")) {
-		const [username, usertag] = user.split("#");
+const handleQuery = async () => {
+  if (!user.includes("#")) {
+    alert("Something went wrong! Please check you added '#' symbol.");
+    return;
+  }
 
-		fetch(
-			`/api/getPUUID?gameName=${username}&tagLine=${usertag}`,
-		)
-			.then((response) => response.json())
-			.then((result) => {
-				if (result.puuid) {
-					console.log("PUUID:", result.puuid);
-					return fetch(
-						`/api/playerStats?puuid=${result.puuid}`,
-					);
-				} else {
-					throw new Error("PUUID не знайдено");
-				}
-			})
-			.then((response) => response.json())
-			.then((data) => {
-				stats.value = data;
-				console.log("🔥 Статистика гравця:", data);
-			})
-			.catch((error) => console.error("❌ Помилка:", error));
-	} else {
-		alert("Something went wrong! Please check you added '#' symbol.");
-	}
+  const [username, usertag] = user.split("#");
+
+  try {
+    // Отримуємо PUUID
+    const res1 = await fetch(`http://localhost:3000/getPUUID?gameName=${username}&tagLine=${usertag}`);
+    if (!res1.ok) {
+      const errorText = await res1.text();
+      throw new Error(`Помилка getPUUID: ${errorText}`);
+    }
+    const result = await res1.json();
+    if (!result.puuid) {
+      throw new Error("PUUID не знайдено");
+    }
+    console.log("PUUID:", result.puuid);
+
+    // Отримуємо статистику гравця
+    const res2 = await fetch(`http://localhost:3000/playerStats?puuid=${result.puuid}`);
+    if (!res2.ok) {
+      const errorText = await res2.text();
+      throw new Error(`Помилка playerStats: ${errorText}`);
+    }
+    const data = await res2.json();
+    stats.value = data;
+    console.log("🔥 Статистика гравця:", data);
+  } catch (error) {
+    console.error("❌ Помилка:", error);
+  }
 };
+
+
 
 onMounted(() => {
 	handleQuery();
 });
+
 </script>
 
 <template>
