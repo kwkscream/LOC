@@ -3,9 +3,7 @@ import fetch from 'node-fetch';
 import cors from 'cors';
 
 const app = express();
-const PORT = 3000;
 const REGION = 'europe';
-
 const API_KEY = process.env.API_KEY;
 
 app.use(cors());
@@ -29,7 +27,9 @@ app.get('/getPUUID', async (req, res) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      return res.status(response.status).json({ error: 'Помилка при отриманні PUUID', details: errorText });
+      return res
+        .status(response.status)
+        .json({ error: 'Помилка при отриманні PUUID', details: errorText });
     }
 
     const data = await response.json();
@@ -96,7 +96,6 @@ async function getMatchStats(matchId, puuid) {
 
 // Функція для отримання інформації про суммонера (рівень тощо)
 async function getSummonerLevel(puuid) {
-  // Використовуємо платформний домен для суммонер endpoint (EUW1 для Європи)
   const url = `https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}`;
   try {
     const response = await fetch(url, {
@@ -115,7 +114,6 @@ async function getSummonerLevel(puuid) {
 
 // Функція для отримання рангової статистики
 async function getRankedStats(summonerId) {
-  // Використовуємо платформний домен для League endpoint (EUW1 для Європи)
   const url = `https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}`;
   try {
     const response = await fetch(url, {
@@ -165,7 +163,10 @@ app.get('/playerStats', async (req, res) => {
       }
     });
 
-    const topChampion = Object.keys(championCounts).reduce((a, b) => (championCounts[a] > championCounts[b] ? a : b), null);
+    const topChampion = Object.keys(championCounts).reduce(
+      (a, b) => (championCounts[a] > championCounts[b] ? a : b),
+      null
+    );
 
     const summonerInfo = await getSummonerLevel(puuid);
     if (!summonerInfo) return res.status(500).json({ error: 'Failed to get summoner info' });
@@ -185,6 +186,13 @@ app.get('/playerStats', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Сервер працює на http://localhost:${PORT}`);
-});
+// Якщо запущено локально, стартуємо сервер.
+// На Vercel цей файл буде експортуватися як серверна функція.
+if (process.env.NODE_ENV !== 'vercel') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`✅ Сервер працює на http://localhost:${PORT}`);
+  });
+}
+
+export default app;
