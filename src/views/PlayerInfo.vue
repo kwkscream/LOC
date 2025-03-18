@@ -17,7 +17,7 @@ const handleQuery = async () => {
 
   try {
     // Отримуємо PUUID
-    const res1 = await fetch(`http://localhost:3000/getPUUID?gameName=${username}&tagLine=${usertag}`);
+    const res1 = await fetch(`/api/getPUUID?gameName=${username}&tagLine=${usertag}`);
     if (!res1.ok) {
       const errorText = await res1.text();
       throw new Error(`Помилка getPUUID: ${errorText}`);
@@ -29,7 +29,7 @@ const handleQuery = async () => {
     console.log("PUUID:", result.puuid);
 
     // Отримуємо статистику гравця
-    const res2 = await fetch(`http://localhost:3000/playerStats?puuid=${result.puuid}`);
+    const res2 = await fetch(`/api/playerStats?puuid=${result.puuid}`);
     if (!res2.ok) {
       const errorText = await res2.text();
       throw new Error(`Помилка playerStats: ${errorText}`);
